@@ -11,6 +11,8 @@ import {createMuiTheme, ThemeProvider, StylesProvider} from '@material-ui/core/s
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 
+import {CloudinaryContext} from 'cloudinary-react';
+
 import ScheduleIcon from '@material-ui/icons/Schedule';
 import SearchIcon from '@material-ui/icons/Search';
 import MenuIcon from '@material-ui/icons/Menu';
@@ -49,126 +51,135 @@ function App({Component, pageProps, tmdbConf, movies}) {
         <Provider store={store}>
             <StylesProvider injectFirst> {/* styles are injected in the head; style tags coming first have less priority; inject material-ui styles first so we can override them easily */}
                 <ThemeProvider theme={theme}>
-                    <div id="app">
-                        <Head>
-                            <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width"/>
-                        </Head>
+                    <CloudinaryContext cloudName="befeepilf" secure>
+                        <div id="app">
+                            <Head>
+                                <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width"/>
+                                <meta http-equiv="Accept-CH" content="DPR, Viewport-Width, Width"/>
+                            </Head>
 
-                        <header>
-                            <div className="container">
-                                <h1>Astral</h1>
-                                <Button
-                                    variant="outlined"
-                                    startIcon={<ScheduleIcon/>}
-                                    disableElevation
-                                    className={btnAllMovies.className}
-                                >All movies</Button>
+                            <header>
+                                <div className="container">
+                                    <h1>Astral</h1>
+                                    <Button
+                                        variant="outlined"
+                                        startIcon={<ScheduleIcon/>}
+                                        disableElevation
+                                        className={btnAllMovies.className}
+                                    >All movies</Button>
 
-                                <div className="profile"></div>
-                                <IconButton>
-                                    <SearchIcon/>
-                                </IconButton>
-                                <IconButton>
-                                    <MenuIcon/>
-                                </IconButton>
-                            </div>
-                        </header>
+                                    <div className="profile"></div>
+                                    <IconButton>
+                                        <SearchIcon/>
+                                    </IconButton>
+                                    <IconButton>
+                                        <MenuIcon/>
+                                    </IconButton>
+                                </div>
+                            </header>
 
-                        <Component {...pageProps}/>
+                            <Component {...pageProps}/>
 
-                        <footer className="container">
-                            <nav>
-                                <Link href="/"><a>Home page</a></Link>
-                                <Link href="/#all-movies"><a>All movies</a></Link>
-                                <Link href="/#coming-soon"><a>Soon on the screens</a></Link>
-                                <Link href="/about"><a>About us</a></Link>
-                            </nav>
+                            <footer className="container">
+                                <nav>
+                                    <Link href="/"><a>Home page</a></Link>
+                                    <Link href="/#all-movies"><a>All movies</a></Link>
+                                    <Link href="/#coming-soon"><a>Soon on the screens</a></Link>
+                                    <Link href="/about"><a>About us</a></Link>
+                                </nav>
 
-                            <nav>
-                                <Button startIcon={<FacebookIcon/>} href="">Facebook</Button>
-                                <Button
-                                    startIcon={<YouTubeIcon/>}
-                                    href="https://youtu.be/1uyB3Emp_h0"
-                                    target="_blank"
-                                >YouTube</Button>
-                                <Button startIcon={<InstagramIcon/>} href="">Instagram</Button>
-                            </nav>
-                        </footer>
+                                <nav>
+                                    <Button startIcon={<FacebookIcon/>} href="">Facebook</Button>
+                                    <Button
+                                        startIcon={<YouTubeIcon/>}
+                                        href="https://youtu.be/1uyB3Emp_h0"
+                                        target="_blank"
+                                    >YouTube</Button>
+                                    <Button startIcon={<InstagramIcon/>} href="">Instagram</Button>
+                                </nav>
+                            </footer>
 
 
-                        <style jsx>{`
-                            header {
-                                position: absolute;
-                                width: 100%;
-                                z-index: 1;
-                            }
+                            <style jsx>{`
+                                header {
+                                    position: absolute;
+                                    width: 100%;
+                                    z-index: 1;
+                                }
 
-                            header .container {
-                                display: flex;
-                                align-items: center;
-                            }
+                                header .container {
+                                    display: flex;
+                                    align-items: center;
+                                }
 
-                            footer {
-                                display: flex;
-                                justify-content: space-between;
-                                padding: 35px 0;
-                                border-top: 1px solid grey;
-                            }
+                                footer {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    padding: 35px 0;
+                                    border-top: 1px solid grey;
+                                }
 
-                            footer a {
-                                display: inline-flex;
-                                align-items: center;
-                                margin-right: 56px;
-                            }
+                                footer a {
+                                    display: inline-flex;
+                                    align-items: center;
+                                    margin-right: 56px;
+                                }
 
-                            footer a:last-child {
-                                margin-right: 0;
-                            }
-                        `}</style>
+                                footer a:last-child {
+                                    margin-right: 0;
+                                }
+                            `}</style>
 
-                        {btnAllMovies.styles}
+                            {btnAllMovies.styles}
 
-                        <style jsx global>{`
-                            html,
-                            body {
-                                padding: 0;
-                                margin: 0;
-                                font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-                                    Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-                                    sans-serif;
-                                color: ${TEXT_PRIMARY};
-                                background-color: #212121;
-                                overflow-x: hidden;
-                            }
-                
-                            * {
-                                box-sizing: border-box;
-                            }
+                            <style jsx global>{`
+                                html,
+                                body {
+                                    padding: 0;
+                                    margin: 0;
+                                    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+                                        Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
+                                        sans-serif;
+                                    color: ${TEXT_PRIMARY};
+                                    background-color: #212121;
+                                    overflow-x: hidden;
+                                }
+                    
+                                * {
+                                    box-sizing: border-box;
+                                }
 
-                            a {
-                                text-decoration: none;
-                                color: inherit;
-                            }
+                                a {
+                                    text-decoration: none;
+                                    color: inherit;
+                                }
 
-                            #app {
-                                display: flex;
-                                flex-direction: column;
-                                width: 100vw;
-                                min-height: 100vh;
-                            }
+                                img {
+                                    object-fit: cover;
+                                    width: 100%;
+                                    height: 100%;
+                                }
 
-                            main {
-                                flex: 1;
-                            }
+                                #app {
+                                    display: flex;
+                                    flex-direction: column;
+                                    width: 100vw;
+                                    min-height: 100vh;
+                                }
 
-                            .container {
-                                width: 100%;
-                                max-width: calc(100% - 70px);
-                                margin-left: auto;
-                                margin-right: auto;
-                            }
-                        `}</style>
-                    </div>
+                                main {
+                                    flex: 1;
+                                }
+
+                                .container {
+                                    width: 100%;
+                                    max-width: calc(100% - 70px);
+                                    margin-left: auto;
+                                    margin-right: auto;
+                                }
+                            `}</style>
+                        </div>
+                    </CloudinaryContext>
                 </ThemeProvider>
             </StylesProvider>
         </Provider>

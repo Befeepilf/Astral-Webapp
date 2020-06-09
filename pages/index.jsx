@@ -4,7 +4,7 @@ import MovieImage from 'components/MovieImage';
 
 export default function Home() {
   const movies = useSelector(({movies}) => movies);
-  const [selectedMovie, setSelectedMovie] = React.useState(movies.results[0]);
+  const [selectedMovie, setSelectedMovie] = React.useState(movies.results[0].id);
 
   // effect for creating an interval to automatically change selectedMovie 
   React.useEffect(() => {
@@ -16,7 +16,7 @@ export default function Home() {
       else {
         index++;
       }
-      setSelectedMovie(movies.results[index]);
+      setSelectedMovie(movies.results[index].id);
     }, 5000);
 
     return () => {
@@ -31,7 +31,9 @@ export default function Home() {
       </Head>
 
       <section>
-        <MovieImage type="backdrop" src={selectedMovie.backdrop_path}/>
+        {movies.results.map(m => (
+          <MovieImage key={m.id} type="backdrop" src={m.backdrop_path} hidden={m.id !== selectedMovie}/>
+        ))}
       </section>
 
       <style jsx>{`

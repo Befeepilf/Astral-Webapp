@@ -1,4 +1,11 @@
 import {useSelector} from 'react-redux';
+import {resolve} from 'styled-jsx/css';
+import {Image, Transformation} from 'cloudinary-react';
+
+
+const hiddenImg = resolve`
+    display: none;
+`;
 
 export default function MoviePoster(props) {
     const baseUrl = useSelector(({tmdbConf}) => tmdbConf.images.secure_base_url);
@@ -14,37 +21,21 @@ export default function MoviePoster(props) {
     });
 
     return (
-        <picture>
-            {sizes.map(size => {
-                if(size !== 'original') {
-                    const width = size.substr(1);
-                    return (
-                        <source
-                            key={size}
-                            srcSet={`${baseUrl}${size}${props.src}`}
-                            media={`(max-width: ${width}px)`}
-                        />
-                    );
-                }
-            })}
-            <img src={`${baseUrl}original${props.src}`}/>
-
-            <style jsx>{`
-                & {
-                    display: block;
-                    position: relative;
-                    width: 100%;
-                    height: 100%;
-                    overflow: hidden;
-                }
-
-                img {
-                    object-fit: cover;
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                }
-            `}</style>
-        </picture>
+        <React.Fragment>
+            <Image
+                type="fetch"
+                publicId={`${baseUrl}original${props.src}`}
+                responsive
+                dpr="auto"
+                width="auto"
+                crop="scale"
+                responsiveUseBreakpoints="true"
+                className={props.hidden ? hiddenImg.className : ''}
+            >
+                <Transformation quality="auto" fetchFormat="auto"/>
+            </Image>
+            
+            {hiddenImg.styles}
+        </React.Fragment>
     );
 }
