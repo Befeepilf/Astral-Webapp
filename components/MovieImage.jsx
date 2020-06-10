@@ -1,5 +1,6 @@
 import {useSelector} from 'react-redux';
 import {resolve} from 'styled-jsx/css';
+import classNames from 'classnames';
 import {Image, Transformation} from 'cloudinary-react';
 
 
@@ -30,7 +31,7 @@ export default function MoviePoster(props) {
                 width="auto"
                 crop="scale"
                 responsiveUseBreakpoints="true"
-                className={props.hidden ? hiddenImg.className : ''}
+                className={classNames(props.className, {[hiddenImg.className]: props.hidden})}
             >
                 <Transformation quality="auto" fetchFormat="auto"/>
             </Image>

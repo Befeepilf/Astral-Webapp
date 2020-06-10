@@ -24,6 +24,10 @@ import {TEXT_PRIMARY} from 'colors.js';
 
 const theme = createMuiTheme({
     palette: {
+        type: 'dark',
+        primary: {
+            main: '#febc0e'
+        },
         text: {
             primary: TEXT_PRIMARY
         },
@@ -32,6 +36,7 @@ const theme = createMuiTheme({
         }
     },
     typography: {
+        fontFamily: 'inherit',
         button: {
             textTransform: 'none'
         }
@@ -39,14 +44,21 @@ const theme = createMuiTheme({
 });
 
 const btnAllMovies = resolve`
-    margin-left: 28px;
+    padding: 7px 21px 7px;
+    margin-left: 35px;
     margin-right: auto;
-    border: 1px solid grey;
+    font-weight: bold;
+    border: 1px solid #fff;
     border-radius: 35px;
 `;
 
-function App({Component, pageProps, tmdbConf, movies}) {
-    const [store, setStore] = React.useState(createStore(reducer, {tmdbConf, movies}));
+const btnAllMoviesIcon = resolve`
+    margin-right: 5px;
+    font-size: 1rem;
+`;
+
+function App({Component, pageProps, initialState}) {
+    const [store, setStore] = React.useState(createStore(reducer, initialState));
     return (
         <Provider store={store}>
             <StylesProvider injectFirst> {/* styles are injected in the head; style tags coming first have less priority; inject material-ui styles first so we can override them easily */}
@@ -55,7 +67,7 @@ function App({Component, pageProps, tmdbConf, movies}) {
                         <div id="app">
                             <Head>
                                 <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width"/>
-                                <meta http-equiv="Accept-CH" content="DPR, Viewport-Width, Width"/>
+                                <meta httpEquiv="Accept-CH" content="DPR, Viewport-Width, Width"/>
                             </Head>
 
                             <header>
@@ -63,17 +75,19 @@ function App({Component, pageProps, tmdbConf, movies}) {
                                     <h1>Astral</h1>
                                     <Button
                                         variant="outlined"
-                                        startIcon={<ScheduleIcon/>}
                                         disableElevation
                                         className={btnAllMovies.className}
-                                    >All movies</Button>
+                                    >
+                                        <ScheduleIcon className={btnAllMoviesIcon.className}/>
+                                        All movies
+                                    </Button>
 
                                     <div className="profile"></div>
                                     <IconButton>
-                                        <SearchIcon/>
+                                        <SearchIcon fontSize="large"/>
                                     </IconButton>
                                     <IconButton>
-                                        <MenuIcon/>
+                                        <MenuIcon fontSize="large"/>
                                     </IconButton>
                                 </div>
                             </header>
@@ -104,7 +118,9 @@ function App({Component, pageProps, tmdbConf, movies}) {
                                 header {
                                     position: absolute;
                                     width: 100%;
-                                    z-index: 1;
+                                    z-index: 2;
+                                    padding-top: 35px;
+                                    //background: linear-gradient(to top, transparent, rgba(0, 0, 0, 0.7) 35%);
                                 }
 
                                 header .container {
@@ -131,6 +147,7 @@ function App({Component, pageProps, tmdbConf, movies}) {
                             `}</style>
 
                             {btnAllMovies.styles}
+                            {btnAllMoviesIcon.styles}
 
                             <style jsx global>{`
                                 html,
@@ -146,12 +163,17 @@ function App({Component, pageProps, tmdbConf, movies}) {
                                 }
                     
                                 * {
+                                    z-index: 1;
                                     box-sizing: border-box;
                                 }
 
                                 a {
                                     text-decoration: none;
                                     color: inherit;
+                                }
+
+                                h1, h2, h3, h4, p {
+                                    margin: 0;
                                 }
 
                                 img {
@@ -171,11 +193,24 @@ function App({Component, pageProps, tmdbConf, movies}) {
                                     flex: 1;
                                 }
 
+                                main > :first-child {
+                                    padding-top: 70px;
+                                }
+
                                 .container {
                                     width: 100%;
-                                    max-width: calc(100% - 70px);
+                                    max-width: calc(100% - 126px);
                                     margin-left: auto;
                                     margin-right: auto;
+                                }
+
+                                .bg {
+                                    position: absolute;
+                                    width: 100%;
+                                    height: 100%;
+                                    top: 0;
+                                    left: 0;
+                                    z-index: 0;
                                 }
                             `}</style>
                         </div>
@@ -188,14 +223,18 @@ function App({Component, pageProps, tmdbConf, movies}) {
 
 App.getInitialProps = async (ctx) => {
     const {TMDB_API_KEY} = process.env;
+    const BASE_URL = 'https://api.themoviedb.org/3';
   
-    let res = await fetch(`https://api.themoviedb.org/3/configuration?api_key=${TMDB_API_KEY}`);
+    let res = await fetch(`${BASE_URL}/configuration?api_key=${TMDB_API_KEY}`);
     const tmdbConf = await res.json();
     
-    res = await fetch(`https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1&api_key=${TMDB_API_KEY}`);
+    res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${TMDB_API_KEY}`);
+    const genres = await res.json();
+
+    res = await fetch(`${BASE_URL}/movie/now_playing?language=en-US&page=1&api_key=${TMDB_API_KEY}`);
     const movies = await res.json();
   
-    return {tmdbConf, movies};
+    return {initialState: {tmdbConf, genres: genres.genres, movies}};
 }
 
 export default App;
