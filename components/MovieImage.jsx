@@ -8,7 +8,7 @@ const hiddenImg = resolve`
     display: none;
 `;
 
-export default function MoviePoster(props) {
+export default function MovieImage(props) {
     const baseUrl = useSelector(({tmdbConf}) => tmdbConf.images.secure_base_url);
     const sizes = useSelector(({tmdbConf}) => {
         switch(props.type) {
