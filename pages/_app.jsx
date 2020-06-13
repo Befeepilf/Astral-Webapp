@@ -21,6 +21,8 @@ import InstagramIcon from '@material-ui/icons/Instagram';
 import YouTubeIcon from '@material-ui/icons/YouTube';
 
 import {TEXT_PRIMARY} from 'colors.js';
+import getAppProps from 'getAppProps.js';
+
 
 const theme = createMuiTheme({
     palette: {
@@ -221,20 +223,6 @@ function App({Component, pageProps, initialState}) {
     );
 }
 
-App.getInitialProps = async (ctx) => {
-    const {TMDB_API_KEY} = process.env;
-    const BASE_URL = 'https://api.themoviedb.org/3';
-  
-    let res = await fetch(`${BASE_URL}/configuration?api_key=${TMDB_API_KEY}`);
-    const tmdbConf = await res.json();
-    
-    res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${TMDB_API_KEY}`);
-    const genres = await res.json();
-
-    res = await fetch(`${BASE_URL}/movie/now_playing?language=en-US&page=1&api_key=${TMDB_API_KEY}`);
-    const movies = await res.json();
-  
-    return {initialState: {tmdbConf, genres: genres.genres, movies}};
-}
+App.getInitialProps = getAppProps;
 
 export default App;

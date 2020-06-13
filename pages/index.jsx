@@ -72,8 +72,7 @@ const imgPoster = resolve`
 `;
 
 export default function Home() {
-  const movies = useSelector(({movies}) => movies.results);
-  const genres = useSelector(({genres}) => genres);
+  const movies = useSelector(({movies}) => movies);
 
   const [selectedMovieIndex, setSelectedMovieIndex] = React.useState(0);
   const selectedMovieIndexRef = React.useRef(selectedMovieIndex); // we need access to the current state inside the function that is created on mount and called via requestAnimationFrame for animating the circularProgress
@@ -161,10 +160,10 @@ export default function Home() {
       <section>
         {movies.map(m => (
           <MovieImage
-            key={m.id}
+            key={m.imdb_id}
             type="backdrop"
             src={m.backdrop_path}
-            hidden={m.id !== selectedMovie.id}
+            hidden={m.imdb_id !== selectedMovie.imdb_id}
             className="bg"
           />
         ))}
@@ -194,7 +193,7 @@ export default function Home() {
             <div className="details-row">
               <Rating
                 size="small"
-                value={selectedMovie.vote_average * 5/10}
+                value={selectedMovie.imdb_rating * 5/10}
                 max={5}
                 precision={0.1}
                 readOnly 
@@ -203,7 +202,7 @@ export default function Home() {
               />
               <p className="genre">
                 <strong>Genre: </strong>
-                <span>{selectedMovie.genre_ids.map(id => genres.find(genre => genre.id === id).name).join(', ')}</span>
+                <span>{selectedMovie.genres.join(', ')}</span>
               </p>
             </div>
           
@@ -215,7 +214,7 @@ export default function Home() {
                   value={selectedSession}
                   onChange={(event, value) => setSelectedSession(value)}
                 >
-                  {["15:20", "17:30", "18:40", "20:50", "23:15"].map(time => (
+                  {selectedMovie.sessions.map(time => (
                     <ToggleButton
                       key={time}
                       value={time}
@@ -256,7 +255,7 @@ export default function Home() {
                 const arr = [];
                 movies.forEach((m, i) => {
                   const Poster = (
-                    <div key={m.id} className="poster">
+                    <div key={m.imdb_id} className="poster">
                       <p className="date">04</p>
                       <MovieImage type="poster" src={m.poster_path} className={imgPoster.className}/>
                     </div>
