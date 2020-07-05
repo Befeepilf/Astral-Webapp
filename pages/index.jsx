@@ -28,7 +28,7 @@ import styles from 'styles/index.css';
 import {TEXT_PRIMARY} from 'colors.js';
 
 
-const TRANSITION_INTERVAL = 10000 * 100; // interval in ms for switching displayedSession
+const TRANSITION_INTERVAL = 10000; // interval in ms for switching displayedSession
 const TRANSITION_DURATION = 1000;
 
 
