@@ -32,7 +32,7 @@ export async function getMovies() {
         {id: 44826}
     ];
 
-    // get imdb rating and strip away data we don't need
+    // get imdb rating and throw away data we don't need
     await Promise.all(movies.map(async function ({ id }, i) {
         const { title, genres, imdb_id, poster_path, backdrop_path } = await getMovie(id);
         const imdb_rating = await getImdbRating(imdb_id);

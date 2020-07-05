@@ -15,12 +15,16 @@ import PlayArrowOutlinedIcon from '@material-ui/icons/PlayArrowOutlined';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
+import {CSSTransition, TransitionGroup} from 'react-transition-group';
+
 import MovieImage from 'components/MovieImage';
 
+import styles from 'styles/index.css';
 import {TEXT_PRIMARY} from 'colors.js';
 
 
-const INTERVAL = 10000; // interval in ms for switching selectedMovie
+const TRANSITION_INTERVAL = 10000; // interval in ms for switching selectedMovie
+const TRANSITION_DURATION = 1000;
 
 
 const rating = resolve`
@@ -66,6 +70,11 @@ const btnTimeline = resolve`
   border: 1px solid currentColor;
 `;
 
+const posters = resolve`
+  display: flex;
+  align-items: flex-end;
+`;
+
 const imgPoster = resolve`
   width: 189px;
   height: 301px;
@@ -74,9 +83,14 @@ const imgPoster = resolve`
 export default function Home() {
   const movies = useSelector(({movies}) => movies);
 
+  const isTransitioningRef = React.useRef(false);
+
+  const slideDirectionRef = React.useRef(1); // indicates whether to slide forwards or backwards
+
   const [selectedMovieIndex, setSelectedMovieIndex] = React.useState(0);
   const selectedMovieIndexRef = React.useRef(selectedMovieIndex); // we need access to the current state inside the function that is created on mount and called via requestAnimationFrame for animating the circularProgress
   const animationRequestRef = React.useRef();
+
 
   const [selectedSession, setSelectedSession] = React.useState();
 
@@ -92,15 +106,26 @@ export default function Home() {
       newSelectedMovieIndex = 0;
     }
 
-    setSelectedMovieIndex(newSelectedMovieIndex);
-    selectedMovieIndexRef.current = newSelectedMovieIndex;
+    if(!isTransitioningRef.current) {
+      slideDirectionRef.current = change;
+      console.log("set", slideDirectionRef.current);
+      setSelectedMovieIndex(newSelectedMovieIndex);
+      selectedMovieIndexRef.current = newSelectedMovieIndex;
+
+      isTransitioningRef.current = true;
+
+      setTimeout(() => {
+        isTransitioningRef.current = false;
+      }, TRANSITION_DURATION);
+    }
+
   }
 
   //effect for creating an interval to automatically change selectedMovie 
   React.useEffect(() => {
     const timeout = setTimeout(() => {
       changeSelectedMovieIndex(1);
-    }, INTERVAL);
+    }, TRANSITION_INTERVAL);
 
     return () => {
       clearTimeout(timeout);
@@ -120,8 +145,8 @@ export default function Home() {
       const now = new Date().getTime();
       let diff = now - start;
 
-      // reset animation if either INTERVAL ms have ellapsed or if selectedMovie changed
-      if(diff >= (INTERVAL + intervalCorrection) || selectedMovieIndexRef.current !== lastMovieIndex) {
+      // reset animation if either TRANSITION_INTERVAL ms have ellapsed or if selectedMovie changed
+      if(diff >= (TRANSITION_INTERVAL + intervalCorrection) || selectedMovieIndexRef.current !== lastMovieIndex) {
         start = now;
         diff = 0;
         lastMovieIndex = selectedMovieIndexRef.current;
@@ -131,7 +156,7 @@ export default function Home() {
       circularProgressRef.current.width = 52 * window.devicePixelRatio;
       circularProgressRef.current.height = 52 * window.devicePixelRatio;
 
-      ctx.arc(26, 26, 25, 0, diff / (INTERVAL + intervalCorrection) * 2 * Math.PI);
+      ctx.arc(26, 26, 25, 0, diff / (TRANSITION_INTERVAL + intervalCorrection) * 2 * Math.PI);
       ctx.lineWidth = 2;
       ctx.strokeStyle = '#fff';
       ctx.stroke();
@@ -148,6 +173,8 @@ export default function Home() {
 
 
   const selectedMovie = movies[selectedMovieIndex];
+
+  console.log("render", slideDirectionRef.current)
 
   return (
     <main>
@@ -214,7 +241,7 @@ export default function Home() {
                   value={selectedSession}
                   onChange={(event, value) => setSelectedSession(value)}
                 >
-                  {selectedMovie.sessions.map(time => (
+                  {["15:20", "17:30", "18:40", "20:50", "23:15"].map(time => (
                     <ToggleButton
                       key={time}
                       value={time}
@@ -238,7 +265,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="timeline">
+          <div className={classNames('timeline', slideDirectionRef.current > 0 ? 'slide-forwards' : 'slide-backwards')}>
             <div className="actions">
               <IconButton size="small" className={btnTimeline.className} onClick={() => changeSelectedMovieIndex(-1)}>
                 <ChevronLeftIcon/>
@@ -249,48 +276,59 @@ export default function Home() {
                 <ChevronRightIcon/>
               </IconButton>
             </div>
+            
+            <TransitionGroup component={null}>
+              <CSSTransition key={selectedMovieIndex} timeout={TRANSITION_DURATION}>
+                <div className="posters">
+                  {(() => {
+                    const arr = [];
+                    movies.forEach((m, i) => {
+                      const Poster = (
+                        <div key={m.imdb_id} className="poster">
+                          <p className="date">04</p>
+                          <MovieImage type="poster" src={m.poster_path} className={imgPoster.className}/>
+                        </div>
+                      );
+                      
+                      // put selected movie at front
+                      if(i === selectedMovieIndex) {
+                        arr.unshift(Poster);
+                      }
+                      // movie comes after selected movie but before previously movies already added to arr
+                      else if(i > selectedMovieIndex) {
+                        arr.splice(i - selectedMovieIndex, 0, Poster);
+                      }
+                      // append movie to end of arr
+                      else {
+                        arr.push(Poster);
+                      }
+                    });
+                    
+                    // put last movie at front
+                    // important for making posters slider work in both directions
+                    arr.unshift(arr.pop());
 
-            <div className="posters">
-              {(() => {
-                const arr = [];
-                movies.forEach((m, i) => {
-                  const Poster = (
-                    <div key={m.imdb_id} className="poster">
-                      <p className="date">04</p>
-                      <MovieImage type="poster" src={m.poster_path} className={imgPoster.className}/>
-                    </div>
-                  );
+                    arr.splice(3, 0, (
+                      <div key="tomorrow" className="separator">
+                        <svg viewBox="0 0 7 401" height="401">
+                          <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="42%" style={{stopColor: '#fff'}}/>
+                              <stop offset="100%" style={{stopColor: 'transparent'}}/>
+                            </linearGradient>
+                          </defs>
+                          <circle cx="3.5" cy="3.5" r="3.5" fill="#fff"/>
+                          <rect x="2.5" y="7" width="2" height="394" fill="url(#grad1)"/>
+                        </svg>
+                        <p>Tomorrow</p>
+                      </div>
+                    ));
 
-                  if(i === selectedMovieIndex) {
-                    arr.unshift(Poster);
-                  }
-                  else if(i > selectedMovieIndex) {
-                    arr.splice(i - selectedMovieIndex, 0, Poster);
-                  }
-                  else {
-                    arr.push(Poster);
-                  }
-                });
-
-                arr.splice(2, 0, (
-                  <div key="tomorrow" className="separator">
-                    <svg viewBox="0 0 7 401" height="401">
-                      <defs>
-                        <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="42%" style={{stopColor: '#fff'}}/>
-                          <stop offset="100%" style={{stopColor: 'transparent'}}/>
-                        </linearGradient>
-                      </defs>
-                      <circle cx="3.5" cy="3.5" r="3.5" fill="#fff"/>
-                      <rect x="2.5" y="7" width="2" height="394" fill="url(#grad1)"/>
-                    </svg>
-                    <p>Tomorrow</p>
-                  </div>
-                ));
-
-                return arr
-              })()}
-            </div>
+                    return arr
+                  })()}
+                </div>
+              </CSSTransition>
+            </TransitionGroup>
           </div>
         </div>
       </section>
@@ -303,155 +341,49 @@ export default function Home() {
       {btnMore.styles}
       {btnMoreIcon.styles}
       {btnTimeline.styles}
+      {posters.styles}
       {imgPoster.styles}
 
+      <style jsx>{styles}</style>
       <style jsx>{`
-        main::after {
-          content: '';
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          top: 0;
-          left: 0;
-          background: linear-gradient(to top, rgba(0, 0, 0, 1), transparent, rgba(0, 0, 0, 1)), linear-gradient(to bottom left, transparent, rgba(0, 0, 0, 1));
-        }
-
-        section {
-          display: flex;
-          align-items: flex-end;
-          height: 100vh;
-          padding-bottom: 70px;
-        }
-
-        .container {
-          display: flex;
-          justify-content: space-between;
-          position: relative;
-        }
-
-        .day p, .separator p {
-          margin-top: -12px;
-          margin-left: 14px;
-          font-size: 1.375rem;
-          font-weight: bold;
-        }
-
-        .details {
-          flex-basis: 490px;
-          flex-shrink: 0;
-        }
-
-        .details .day {
-          display: flex;
-          margin-bottom: -35px;
-        }
-
-        .details .day svg {
-          width: 7px;
-        }
-
-        .details .title, .details .details-row {
-          display: flex;
-          align-items: center;
-        }
-
-        .details .title .date {
-          font-family: bebas-neue-pro, sans-serif;
-          font-size: 7rem;
-          font-weight: 200;
-          letter-spacing: 7px;
-        }
-
-        .details .title h2 {
-          margin-left: 14px;
-          font-size: 3rem;
-          line-height: 1;
-        }
-
-        .details .details-row {
-          margin-left: 4px;
-        }
-
-        .details .genre {
-          font-size: 0.875rem;
-        }
-
-        .details .genre strong {
-          margin-right: 4px;
-        }
-
-        .details .genre span {
-          text-transform: lowercase;
-        }
-
-        .schedule {
-          margin-top: 42px;
-          margin-left: 4px;
-        }
-
-        .schedule p {
-          margin-bottom: 21px;
-          font-size: 0.875rem;
-          font-weight: bold;
-        }
-
-        .schedule .actions {
-          margin-top: 35px;
-        }
-
-
-
-        .timeline {
-          display: flex;
-          align-items: flex-end;
-        }
-
-        .timeline .actions {
-          display: flex;
-          align-items: center;
-          position: relative;
-          margin-right: 21px;
-          margin-bottom: -14px;
-        }
-
-        .timeline .actions .circularProgress {
-          position: absolute;
-          width: 52px;
-          height: 52px;
-          right: 6px;
-          transform: rotate(180deg);
-        }
-
         .timeline .posters {
           display: flex;
           align-items: flex-end;
         }
 
-        .timeline .poster {
-          display: flex;
-          flex-direction: column;
+        .timeline .posters > * {
+          transform: translateX(calc(-100% - 21px));
         }
 
-        .timeline .poster:not(:last-child) {
-          margin-right: 21px;
+        .timeline .posters > :first-child {
+          opacity: 0;
         }
 
-        .timeline .poster .date {
-          margin-bottom: 14px;
-          font-family: bebas-neue-pro, sans-serif;
-          font-size: 1.25rem;
-          font-weight: 400;
+        .timeline .posters.enter {
+            position: absolute;
+            opacity: 0;
         }
 
-        .timeline .separator {
-          display: flex;
-          position: relative;
-          margin-right: 21px;
+        .timeline .posters.exit > * {
+            transform: translateX(calc(-100% - 21px));
         }
 
-        .timeline .separator p {
-          position: absolute;
-          left: 7px;
+        .timeline.slide-forwards .posters.exit-active > * {
+            transform: translateX(calc(-200% - 42px));
+            transition: all ${TRANSITION_DURATION}ms;
+        }
+
+        .timeline.slide-forwards .posters.exit-active > :nth-child(2) {
+          opacity: 0;
+        }
+
+        .timeline.slide-backwards .posters.exit-active > * {
+          transform: translateX(0);
+          transition: all ${TRANSITION_DURATION}ms;
+        }
+
+        .timeline.slide-backwards .posters.exit-active > :first-child {
+          opacity: 1;
         }
       `}</style>
     </main>
