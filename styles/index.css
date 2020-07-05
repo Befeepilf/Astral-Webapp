@@ -124,6 +124,10 @@ section {
     margin-right: 21px;
 }
 
+.timeline .poster.has-separator:not(:first-child) {
+    margin-right: 42px;
+}
+
 .timeline .poster .date {
     margin-bottom: 14px;
     font-family: bebas-neue-pro, sans-serif;
@@ -131,14 +135,14 @@ section {
     font-weight: 400;
 }
 
-.timeline .separator {
+.timeline .poster .separator {
     display: flex;
-    position: relative;
-    padding: 0 91px; /* make as wide as a poster */
-    margin: 0 -70px 0 -91px;
+    position: absolute;
+    right: -21px;
+    bottom: 0;
 }
 
-.timeline .separator p {
+.timeline .poster .separator p {
     position: absolute;
-    left: 98px;
+    left: 7px;
 }

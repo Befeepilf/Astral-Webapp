@@ -14,31 +14,22 @@ async function getImdbRating(imdbId) {
     return (/<span itemprop="ratingValue">(\d{1,2}\.\d)/.exec(html) || [])[1];
 }
 
-async function getMovie(tmdbId) {
-    return await tmdbRequest(`/movie/${tmdbId}`);
-}
 
 export async function getTmdbConf() {
     return await tmdbRequest('/configuration');
 }
 
-export async function getMovies() {
-    // hardcoded movies I personally find awesome
-    const movies = [
-        {id: 433249},
-        {id: 9693},
-        {id: 105},
-        {id: 140607},
-        {id: 44826}
-    ];
-
-    // get imdb rating and throw away data we don't need
-    await Promise.all(movies.map(async function ({ id }, i) {
-        const { title, genres, imdb_id, poster_path, backdrop_path } = await getMovie(id);
-        const imdb_rating = await getImdbRating(imdb_id);
-
-        movies[i] = { imdb_id, title, genres: genres.map(({ id, name }) => name), imdb_rating, poster_path, backdrop_path }
-    }));
-
-    return movies;
+export async function getMovie(tmdbId) {
+    const { title, genres, imdb_id, poster_path, backdrop_path } = await tmdbRequest(`/movie/${tmdbId}`);
+    const imdbRating = await getImdbRating(imdb_id);
+    
+    return {
+        tmdbId,
+        imdbId: imdb_id,
+        title,
+        genres: genres.map(({ id, name }) => name),
+        imdbRating,
+        posterPath: poster_path,
+        backdropPath: backdrop_path
+    };
 }

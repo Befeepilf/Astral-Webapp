@@ -13,6 +13,7 @@
     "@material-ui/lab": "^4.0.0-alpha.55",
     "classnames": "^2.2.6",
     "cloudinary-react": "^1.5.0",
+    "date-fns": "^2.14.0",
     "next": "9.4.4",
     "react": "16.13.1",
     "react-dom": "16.13.1",

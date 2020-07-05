@@ -3,6 +3,11 @@ import {useSelector} from 'react-redux';
 import {resolve} from 'styled-jsx/css';
 import classNames from 'classnames';
 
+import format from 'date-fns/format';
+import isToday from 'date-fns/isToday';
+import isTomorrow from 'date-fns/isTomorrow';
+import isSameDay from 'date-fns/isSameDay';
+
 import Rating from '@material-ui/lab/Rating';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import ToggleButton from '@material-ui/lab/ToggleButton';
@@ -23,7 +28,7 @@ import styles from 'styles/index.css';
 import {TEXT_PRIMARY} from 'colors.js';
 
 
-const TRANSITION_INTERVAL = 10000; // interval in ms for switching selectedMovie
+const TRANSITION_INTERVAL = 10000 * 100; // interval in ms for switching displayedSession
 const TRANSITION_DURATION = 1000;
 
 
@@ -81,14 +86,18 @@ const imgPoster = resolve`
 `;
 
 export default function Home() {
+  const sessions = useSelector(({sessions}) => sessions.map(s => Object.assign({}, s, {startTime: new Date(s.startTime)})));
+  const sessionsWithUniqueMoviesPerDay = useSelector(({sessions}) => (
+    sessions.filter(s1 => !sessions.find(s2 => s2.id !== s1.id && isSameDay(s2.startTime, s1.startTime) && s2.movieId === s1.movieId))
+  ));
   const movies = useSelector(({movies}) => movies);
-
+  
   const isTransitioningRef = React.useRef(false);
 
   const slideDirectionRef = React.useRef(1); // indicates whether to slide forwards or backwards
 
-  const [selectedMovieIndex, setSelectedMovieIndex] = React.useState(0);
-  const selectedMovieIndexRef = React.useRef(selectedMovieIndex); // we need access to the current state inside the function that is created on mount and called via requestAnimationFrame for animating the circularProgress
+  const [displayedSessionIndex, setDisplayedSessionIndex] = React.useState(0);
+  const displayedSessionIndexRef = React.useRef(displayedSessionIndex); // we need access to the current state inside the function that is created on mount and called via requestAnimationFrame for animating the circularProgress
   const animationRequestRef = React.useRef();
 
 
@@ -97,20 +106,19 @@ export default function Home() {
   const circularProgressRef = React.useRef();
 
 
-  function changeSelectedMovieIndex(change) {
-    let newSelectedMovieIndex = selectedMovieIndex + change;
-    if(newSelectedMovieIndex < 0) {
-      newSelectedMovieIndex = movies.length - 1;
+  function changeDisplayedSessionIndex(change) {
+    let newDisplayedSessionIndex = displayedSessionIndex + change;
+    if(newDisplayedSessionIndex < 0) {
+      newDisplayedSessionIndex = sessionsWithUniqueMoviesPerDay.length - 1;
     }
-    else if(newSelectedMovieIndex > movies.length - 1) {
-      newSelectedMovieIndex = 0;
+    else if(newDisplayedSessionIndex > sessionsWithUniqueMoviesPerDay.length - 1) {
+      newDisplayedSessionIndex = 0;
     }
 
     if(!isTransitioningRef.current) {
       slideDirectionRef.current = change;
-      console.log("set", slideDirectionRef.current);
-      setSelectedMovieIndex(newSelectedMovieIndex);
-      selectedMovieIndexRef.current = newSelectedMovieIndex;
+      setDisplayedSessionIndex(newDisplayedSessionIndex);
+      displayedSessionIndexRef.current = newDisplayedSessionIndex;
 
       isTransitioningRef.current = true;
 
@@ -121,23 +129,23 @@ export default function Home() {
 
   }
 
-  //effect for creating an interval to automatically change selectedMovie 
+  //effect for creating an interval to automatically change displayedSession 
   React.useEffect(() => {
     const timeout = setTimeout(() => {
-      changeSelectedMovieIndex(1);
+      changeDisplayedSessionIndex(1);
     }, TRANSITION_INTERVAL);
 
     return () => {
       clearTimeout(timeout);
     };
-  }, [selectedMovieIndex]);
+  }, [displayedSessionIndex]);
 
 
   // animate circularProgress using canvas for high performance
   React.useEffect(() => {
     let start = new Date().getTime();
 
-    let lastMovieIndex = selectedMovieIndexRef.current; // for preventing that animation and change of selectedMovie are out of sync
+    let lastMovieIndex = displayedSessionIndexRef.current; // for preventing that animation and change of displayedSession are out of sync
 
     const intervalCorrection = 70; // correct for any delays happening for whatever reason
 
@@ -145,11 +153,11 @@ export default function Home() {
       const now = new Date().getTime();
       let diff = now - start;
 
-      // reset animation if either TRANSITION_INTERVAL ms have ellapsed or if selectedMovie changed
-      if(diff >= (TRANSITION_INTERVAL + intervalCorrection) || selectedMovieIndexRef.current !== lastMovieIndex) {
+      // reset animation if either TRANSITION_INTERVAL ms have ellapsed or if displayedSession changed
+      if(diff >= (TRANSITION_INTERVAL + intervalCorrection) || displayedSessionIndexRef.current !== lastMovieIndex) {
         start = now;
         diff = 0;
-        lastMovieIndex = selectedMovieIndexRef.current;
+        lastMovieIndex = displayedSessionIndexRef.current;
       }
 
       const ctx = circularProgressRef.current.getContext('2d');
@@ -172,9 +180,8 @@ export default function Home() {
   }, []);
 
 
-  const selectedMovie = movies[selectedMovieIndex];
-
-  console.log("render", slideDirectionRef.current)
+  const displayedSession = sessionsWithUniqueMoviesPerDay[displayedSessionIndex];
+  const displayedSessionMovie = movies.find(m => m.tmdbId === displayedSession.movieId);
 
   return (
     <main>
@@ -187,10 +194,10 @@ export default function Home() {
       <section>
         {movies.map(m => (
           <MovieImage
-            key={m.imdb_id}
+            key={m.tmdbId}
             type="backdrop"
-            src={m.backdrop_path}
-            hidden={m.imdb_id !== selectedMovie.imdb_id}
+            src={m.backdropPath}
+            hidden={m.tmdbId !== displayedSession.movieId}
             className="bg"
           />
         ))}
@@ -209,18 +216,23 @@ export default function Home() {
                 <circle cx="5" cy="5" r="5" fill="#fff"/>
                 <rect x="4" y="10" width="2" height="140" fill="url(#grad0)"/>
               </svg>
-              <p>Today</p>
+              <p>{(() => {
+                if(isToday(displayedSession.startTime)) return "Today";
+                else if(isTomorrow(displayedSession.startTime)) return "Tomorrow";
+                
+                return format(displayedSession.startTime, 'iiii');
+              })()}</p>
             </div>
 
             <div className="title">
-              <p className="date">02</p>
-              <h2>{selectedMovie.title}</h2>
+              <p className="date">{format(displayedSession.startTime, 'dd')}</p>
+              <h2>{displayedSessionMovie.title}</h2>
             </div>
 
             <div className="details-row">
               <Rating
                 size="small"
-                value={selectedMovie.imdb_rating * 5/10}
+                value={displayedSessionMovie.imdbRating * 5/10}
                 max={5}
                 precision={0.1}
                 readOnly 
@@ -229,7 +241,7 @@ export default function Home() {
               />
               <p className="genre">
                 <strong>Genre: </strong>
-                <span>{selectedMovie.genres.join(', ')}</span>
+                <span>{displayedSessionMovie.genres.join(', ')}</span>
               </p>
             </div>
           
@@ -238,18 +250,23 @@ export default function Home() {
               <div className="sessions">
                 <ToggleButtonGroup
                   exclusive
-                  value={selectedSession}
+                  value={displayedSession.id}
                   onChange={(event, value) => setSelectedSession(value)}
                 >
-                  {["15:20", "17:30", "18:40", "20:50", "23:15"].map(time => (
-                    <ToggleButton
-                      key={time}
-                      value={time}
-                      disableRipple
-                      aria-label={time} 
-                      classes={{root: btnSession.className, selected: btnSessionSelected.className}}
-                    >{time}</ToggleButton>
-                  ))}
+                  {sessions
+                    .filter(s => s.movieId === displayedSession.movieId && isSameDay(s.startTime, displayedSession.startTime))
+                    .map(s => {
+                      const formattedStartTime = format(s.startTime, 'HH:mm');
+                      return (
+                        <ToggleButton
+                          key={s.id}
+                          value={s.id}
+                          disableRipple
+                          aria-label={formattedStartTime} 
+                          classes={{root: btnSession.className, selected: btnSessionSelected.className}}
+                        >{formattedStartTime}</ToggleButton>
+                      );
+                  })}
                 </ToggleButtonGroup>
               </div>
               <div className="actions">
@@ -267,64 +284,71 @@ export default function Home() {
 
           <div className={classNames('timeline', slideDirectionRef.current > 0 ? 'slide-forwards' : 'slide-backwards')}>
             <div className="actions">
-              <IconButton size="small" className={btnTimeline.className} onClick={() => changeSelectedMovieIndex(-1)}>
+              <IconButton size="small" className={btnTimeline.className} onClick={() => changeDisplayedSessionIndex(-1)}>
                 <ChevronLeftIcon/>
               </IconButton>
 
               <canvas className="circularProgress" ref={circularProgressRef}/>
-              <IconButton className={btnTimeline.className} onClick={() => changeSelectedMovieIndex(1)}>
+              <IconButton className={btnTimeline.className} onClick={() => changeDisplayedSessionIndex(1)}>
                 <ChevronRightIcon/>
               </IconButton>
             </div>
             
             <TransitionGroup component={null}>
-              <CSSTransition key={selectedMovieIndex} timeout={TRANSITION_DURATION}>
+              <CSSTransition key={displayedSessionIndex} timeout={TRANSITION_DURATION}>
                 <div className="posters">
                   {(() => {
-                    const arr = [];
-                    movies.forEach((m, i) => {
-                      const Poster = (
-                        <div key={m.imdb_id} className="poster">
-                          <p className="date">04</p>
-                          <MovieImage type="poster" src={m.poster_path} className={imgPoster.className}/>
-                        </div>
-                      );
-                      
-                      // put selected movie at front
-                      if(i === selectedMovieIndex) {
-                        arr.unshift(Poster);
-                      }
-                      // movie comes after selected movie but before previously movies already added to arr
-                      else if(i > selectedMovieIndex) {
-                        arr.splice(i - selectedMovieIndex, 0, Poster);
-                      }
-                      // append movie to end of arr
-                      else {
-                        arr.push(Poster);
-                      }
-                    });
+                    const posters = [];
                     
-                    // put last movie at front
+                    const arrangedSessions = sessionsWithUniqueMoviesPerDay
+                      .slice(displayedSessionIndex)
+                      .concat(sessionsWithUniqueMoviesPerDay
+                        .slice(0, displayedSessionIndex)
+                      );
+
+                    // put last poster at front
                     // important for making posters slider work in both directions
-                    arr.unshift(arr.pop());
+                    arrangedSessions.unshift(arrangedSessions.pop());
+                    
+                    arrangedSessions.forEach((session, i) => {
+                      const movie = movies.find(m => m.tmdbId === session.movieId);
 
-                    arr.splice(3, 0, (
-                      <div key="tomorrow" className="separator">
-                        <svg viewBox="0 0 7 401" height="401">
-                          <defs>
-                            <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="42%" style={{stopColor: '#fff'}}/>
-                              <stop offset="100%" style={{stopColor: 'transparent'}}/>
-                            </linearGradient>
-                          </defs>
-                          <circle cx="3.5" cy="3.5" r="3.5" fill="#fff"/>
-                          <rect x="2.5" y="7" width="2" height="394" fill="url(#grad1)"/>
-                        </svg>
-                        <p>Tomorrow</p>
-                      </div>
-                    ));
+                      let separator;
+                      if(i < sessionsWithUniqueMoviesPerDay.length - 1) {
+                        const nextSession = arrangedSessions[i + 1];
 
-                    return arr
+                        if(!isSameDay(nextSession.startTime, session.startTime)) {
+                          const separatorLabel = isTomorrow(nextSession.startTime) ? "Tomorrow" : format(nextSession.startTime, 'iiii');
+                          
+                          separator = (
+                            <div className="separator">
+                              <svg viewBox="0 0 7 401" height="401">
+                                <defs>
+                                  <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="42%" style={{stopColor: '#fff'}}/>
+                                    <stop offset="100%" style={{stopColor: 'transparent'}}/>
+                                  </linearGradient>
+                                </defs>
+                                <circle cx="3.5" cy="3.5" r="3.5" fill="#fff"/>
+                                <rect x="2.5" y="7" width="2" height="394" fill="url(#grad1)"/>
+                              </svg>
+  
+                              <p>{separatorLabel}</p>
+                            </div>
+                          );
+                        }
+                      }
+
+                      posters.push((
+                        <div key={session.id} className={classNames('poster', {'has-separator': separator})}>
+                          <p className="date">{format(session.startTime, 'dd')}</p>
+                          <MovieImage type="poster" src={movie.posterPath} className={imgPoster.className}/>
+                          {separator}
+                        </div>
+                      ));
+                    });
+
+                    return posters
                   })()}
                 </div>
               </CSSTransition>
@@ -351,11 +375,12 @@ export default function Home() {
           align-items: flex-end;
         }
 
-        .timeline .posters > * {
+        .timeline .posters .poster {
           transform: translateX(calc(-100% - 21px));
         }
 
-        .timeline .posters > :first-child {
+        .timeline .posters .poster:first-child {
+          margin-left: 0;
           opacity: 0;
         }
 
@@ -364,22 +389,59 @@ export default function Home() {
             opacity: 0;
         }
 
-        .timeline .posters.exit > * {
+        .timeline .posters.exit .poster {
             transform: translateX(calc(-100% - 21px));
         }
 
-        .timeline.slide-forwards .posters.exit-active > * {
+
+        .timeline.slide-forwards .posters.exit-active .poster {
             transform: translateX(calc(-200% - 42px));
             transition: all ${TRANSITION_DURATION}ms;
         }
 
-        .timeline.slide-forwards .posters.exit-active > :nth-child(2) {
+        .timeline.slide-forwards .posters.exit-active .poster.has-separator:nth-child(2) {
+          transform: translateX(calc(-200% - 63px));
+        }
+
+        .timeline.slide-forwards .posters.exit-active .poster.has-separator:nth-child(2) ~ .poster {
+          transform: translateX(calc(-200% - 63px));
+        }
+
+        .timeline.slide-forwards .posters.exit-active .poster:nth-child(2) {
           opacity: 0;
         }
 
-        .timeline.slide-backwards .posters.exit-active > * {
+        .timeline.slide-forwards .posters.exit-active .poster:nth-child(2) .separator {
+          transform: translateY(-14px);
+          transition: transform ${TRANSITION_DURATION}ms;
+        }
+
+
+        .timeline.slide-backwards .posters.exit .poster.has-separator:first-child {
+          margin-left: -21px;
+          margin-right: 42px;
+        }
+
+        .timeline.slide-backwards .posters.exit .poster.has-separator:first-child .separator {
+          transform: translateY(-14px);
+        }
+
+        .timeline.slide-backwards .posters.exit-active .poster {
           transform: translateX(0);
           transition: all ${TRANSITION_DURATION}ms;
+        }
+
+        .timeline.slide-backwards .posters.exit-active .poster.has-separator:first-child {
+          transform: translateX(21px);
+        }
+
+        .timeline.slide-backwards .posters.exit-active .poster.has-separator:first-child .separator {
+          transform: translateY(0);
+          transition: transform ${TRANSITION_DURATION}ms;
+        }
+
+        .timeline.slide-backwards .posters.exit-active .poster.has-separator:first-child ~ .poster {
+          transform: translateX(21px);
         }
 
         .timeline.slide-backwards .posters.exit-active > :first-child {
