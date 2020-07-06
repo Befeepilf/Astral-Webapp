@@ -1,0 +1,41 @@
+.timeline {
+    display: flex;
+    align-items: flex-end;
+}
+
+.timeline .actions {
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    margin-right: 21px;
+    margin-bottom: -14px;
+}
+
+.timeline .actions .circularProgress {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    right: 6px;
+    transform: rotate(180deg);
+}
+
+.timeline .poster {
+    display: flex;
+    flex-direction: column;
+}
+
+.timeline .poster:not(:last-child) {
+    margin-right: 21px;
+}
+
+.timeline .poster.has-separator:not(:first-child) {
+    margin-right: 42px;
+}
+
+.timeline .poster .date {
+    margin-bottom: 14px;
+    font-family: bebas-neue-pro, sans-serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+}

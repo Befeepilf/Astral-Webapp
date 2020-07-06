@@ -1,0 +1,49 @@
+.details {
+    flex-basis: 490px;
+    flex-shrink: 0;
+}
+
+.details .title, .details .details-row {
+    display: flex;
+    align-items: center;
+}
+
+.details .title .date {
+    font-family: bebas-neue-pro, sans-serif;
+    font-size: 7rem;
+    font-weight: 200;
+}
+
+.details .title h2 {
+    margin-left: 21px;
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.details .genre {
+    font-size: 0.875rem;
+}
+
+.details .genre strong {
+    margin-right: 4px;
+}
+
+.details .genre span {
+    text-transform: lowercase;
+}
+
+
+.details .schedule {
+    margin-top: 42px;
+    margin-left: 4px;
+}
+
+.details .schedule p {
+    margin-bottom: 21px;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+.details .schedule .actions {
+    margin-top: 35px;
+}
