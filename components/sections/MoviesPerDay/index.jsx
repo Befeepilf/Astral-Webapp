@@ -10,8 +10,8 @@ import MovieTimeline from 'components/sections/MoviesPerDay/MoviesTimeline.jsx';
 import styles from 'styles/sections/MoviesPerDay/index.css';
 
 
-const TRANSITION_INTERVAL = 10000 * 100; // interval in ms for switching displayedSession
-const TRANSITION_DURATION = 1000;
+const TRANSITION_INTERVAL = 10000; // interval in ms for switching displayedSession
+const TRANSITION_DURATION = 2000;
 
 
 export default function Home() {

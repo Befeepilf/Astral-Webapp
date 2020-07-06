@@ -183,6 +183,24 @@ export default function(props) {
                     opacity: 0;
                 }
 
+                @keyframes stretchPosters {
+                    0% {
+                        transform: scaleX(1);
+                    }
+                    28% {
+                        transform: scaleX(1.03);
+                    }
+                    100% {
+                        transform: scaleX(1);
+                    }
+                }
+
+                .timeline .posters.enter-active, .timeline .posters.exit-active {
+                    transform-origin: left;
+                    animation-name: stretchPosters;
+                    animation-duration: ${props.transitionDuration}ms;
+                }
+
                 .timeline .posters.enter {
                     position: absolute;
                     opacity: 0;
