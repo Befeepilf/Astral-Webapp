@@ -20,8 +20,7 @@ import FacebookIcon from '@material-ui/icons/Facebook';
 import InstagramIcon from '@material-ui/icons/Instagram';
 import YouTubeIcon from '@material-ui/icons/YouTube';
 
-import {TEXT_PRIMARY} from 'colors.js';
-import getAppProps from 'getAppProps.js';
+import {TEXT_PRIMARY, BG} from 'colors.js';
 
 
 const theme = createMuiTheme({
@@ -160,7 +159,7 @@ function App({Component, pageProps, initialState}) {
                                         Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
                                         sans-serif;
                                     color: ${TEXT_PRIMARY};
-                                    background-color: #212121;
+                                    background-color: ${BG};
                                     overflow-x: hidden;
                                 }
                     
@@ -223,6 +222,9 @@ function App({Component, pageProps, initialState}) {
     );
 }
 
-App.getInitialProps = getAppProps;
+App.getInitialProps = async () => {
+    const getAppProps = await import('getAppProps.js');
+    return await getAppProps.default();
+};
 
 export default App;

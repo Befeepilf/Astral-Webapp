@@ -3,8 +3,6 @@ import React from 'react';
 import {useSelector} from 'react-redux';
 import {resolve} from 'styled-jsx/css';
 
-import isToday from 'date-fns/isToday';
-import isTomorrow from 'date-fns/isTomorrow';
 import isSameDay from 'date-fns/isSameDay';
 import format from 'date-fns/format';
 
@@ -20,6 +18,7 @@ import PlayArrowOutlinedIcon from '@material-ui/icons/PlayArrowOutlined';
 import Separator from 'components/Separator.jsx';
 
 import {TEXT_PRIMARY} from 'colors.js';
+import {dateToDayName} from 'util.js';
 
 import styles from 'styles/sections/MoviesPerDay/MovieDetails.css';
 
@@ -71,15 +70,12 @@ export default function(props) {
 
     const allMovieSessionsToday = useSelector(({sessions}) => sessions.filter(s => s.movieId === props.movie.tmdbId && isSameDay(s.startTime, props.startTime)));
 
+    React.useEffect(() => setSelectedSession(null), [props.movie, props.startTime]);
+
     return (
         <div className="details">
 
-            <Separator thin height={102} label={(() => {
-                if(isToday(props.startTime)) return "Today";
-                else if(isTomorrow(props.startTime)) return "Tomorrow";
-                
-                return format(props.startTime, 'iiii');
-            })()} className={day.className}/>
+            <Separator thin height={102} label={dateToDayName(props.startTime)} className={day.className}/>
 
             <div className="title">
                 <p className="date">{format(props.startTime, 'dd')}</p>

@@ -7,6 +7,7 @@ import MovieImage from 'components/MovieImage.jsx';
 import MovieDetails from 'components/sections/MoviesPerDay/MovieDetails.jsx';
 import MovieTimeline from 'components/sections/MoviesPerDay/MoviesTimeline.jsx';
 
+import {BG} from 'colors.js';
 import styles from 'styles/sections/MoviesPerDay/index.css';
 
 
@@ -85,6 +86,17 @@ export default function Home() {
             </div>
 
             <style jsx>{styles}</style>
+            <style jsx>{`
+                section::after {
+                    content: '';
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    top: 0;
+                    left: 0;
+                    background: linear-gradient(to top, ${BG}, transparent, rgba(0, 0, 0, 1)), linear-gradient(to bottom left, transparent, rgba(0, 0, 0, 1));
+                }
+            `}</style>
         </section>
     );
 }

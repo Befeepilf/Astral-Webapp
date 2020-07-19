@@ -55,7 +55,7 @@ function getMovieSessions(imdbId) {
 }
 
 
-export default async function({ctx}) {
+export default async function() {
     const tmdbConf = await getTmdbConf();
     const sessions = getMovieSessions().filter(s => s.startTime > new Date().getTime());
     

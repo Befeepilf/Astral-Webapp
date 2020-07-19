@@ -1,0 +1,45 @@
+.timeline {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+.timeline .day {
+    flex: 0 0 700px;
+}
+
+.timeline .day:not(:last-child) {
+    margin-right: 35px;
+}
+
+.timeline .day .sessions {
+    display: flex;
+    align-items: center;    
+    position: relative;
+    height: 70px;
+    background: linear-gradient(to top, transparent calc(50% - 0.5px), rgba(255, 255, 255, 0.7) calc(50% - 0.5px), rgba(255, 255, 255, 0.7) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+}
+
+.timeline .day .session {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+}
+
+.timeline .day .session svg {
+    position: absolute;
+    top: calc(50% - 3.5px);
+}
+
+.timeline .day .session p {
+    font-size: 0.75rem;
+}
+
+.timeline .day .session p.below {
+    transform: translateY(14px);
+}
+
+.timeline .day .session p.above {
+    transform: translateY(-14px);
+}

@@ -5,8 +5,6 @@ import {resolve} from 'styled-jsx/css';
 import {useSelector} from 'react-redux';
 
 import format from 'date-fns/format';
-import isToday from 'date-fns/isToday';
-import isTomorrow from 'date-fns/isTomorrow';
 import isSameDay from 'date-fns/isSameDay';
 
 import IconButton from '@material-ui/core/IconButton';
@@ -20,6 +18,7 @@ import MovieImage from 'components/MovieImage.jsx';
 import Separator from 'components/Separator.jsx';
 
 import styles from 'styles/sections/MoviesPerDay/MoviesTimeline.css';
+import {dateToDayName} from 'util.js';
 
 
 const btnTimeline = resolve`
@@ -138,12 +137,7 @@ export default function(props) {
                                     const nextSession = arrangedSessions[i + 1];
 
                                     if(!isSameDay(nextSession.startTime, session.startTime)) {
-                                        let separatorLabel;
-                                        if(isToday(nextSession.startTime)) separatorLabel = "Today";
-                                        else if(isTomorrow(nextSession.startTime)) separatorLabel = "Tomorrow";
-                                        else separatorLabel = format(nextSession.startTime, 'iiii');
-
-                                        separator = <Separator height={401} label={separatorLabel} className={separatorStyles.className}/>;
+                                        separator = <Separator height={401} label={dateToDayName(nextSession.startTime)} className={separatorStyles.className}/>;
                                     }
                                 }
 
