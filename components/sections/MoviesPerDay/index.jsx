@@ -65,6 +65,7 @@ export default function Home() {
                     key={m.tmdbId}
                     type="backdrop"
                     src={m.backdropPath}
+                    quality="auto:low"
                     hidden={m.tmdbId !== displayedSession.movieId}
                     className="bg"
                 />

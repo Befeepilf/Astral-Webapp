@@ -1,4 +1,13 @@
 import {expect} from '@jest/globals';
+import React from 'react';
+import {render} from '@testing-library/react';
+
+import {Provider} from 'react-redux';
+import {createStore} from 'redux';
+import reducer from 'redux/reducer.js';
+import {createMuiTheme, ThemeProvider, StylesProvider} from '@material-ui/core/styles';
+import {CloudinaryContext} from 'cloudinary-react';
+
 
 export const tmdbConfMatchingObj = {
     images: {
@@ -22,3 +31,19 @@ export const movieMatchingObj = {
     posterPath: expect.stringMatching(/^\/\S+\.(jpe?g|png)$/),
     backdropPath: expect.stringMatching(/^\/\S+\.(jpe?g|png)$/)
 };
+
+
+export const customRender = (ui, {initialState, ...options}) => render(ui, {
+    ...options,
+    wrapper: ({children}) => (
+        <Provider store={createStore(reducer, initialState || {})}>
+            <StylesProvider injectFirst>
+                <ThemeProvider theme={createMuiTheme()}>
+                    <CloudinaryContext cloudName="befeepilf" secure>
+                        {children}
+                    </CloudinaryContext>
+                </ThemeProvider>
+            </StylesProvider>
+        </Provider>
+    )
+});

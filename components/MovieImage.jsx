@@ -1,25 +1,15 @@
 import {useSelector} from 'react-redux';
-import {resolve} from 'styled-jsx/css';
+import css from 'styled-jsx/css'; // https://github.com/vercel/styled-jsx/issues/469#issuecomment-418851282
 import classNames from 'classnames';
 import {Image, Transformation} from 'cloudinary-react';
 
 
-const hiddenImg = resolve`
+const hiddenImg = (css.resolve)`
     display: none;
 `;
 
 export default function MovieImage(props) {
     const baseUrl = useSelector(({tmdbConf}) => tmdbConf.images.secure_base_url);
-    const sizes = useSelector(({tmdbConf}) => {
-        switch(props.type) {
-            case 'poster':
-                return tmdbConf.images.poster_sizes;
-            case 'backdrop':
-                return tmdbConf.images.backdrop_sizes;
-            default:
-                return [];
-        }
-    });
 
     return (
         <React.Fragment>
@@ -33,7 +23,7 @@ export default function MovieImage(props) {
                 responsiveUseBreakpoints="true"
                 className={classNames(props.className, {[hiddenImg.className]: props.hidden})}
             >
-                <Transformation quality="auto" fetchFormat="auto"/>
+                <Transformation quality={props.quality || 'auto:good'} fetchFormat="auto"/>
             </Image>
             
             {hiddenImg.styles}

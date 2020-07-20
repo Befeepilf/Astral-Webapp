@@ -109,6 +109,7 @@ function App({Component, pageProps, initialState}) {
                                         startIcon={<YouTubeIcon/>}
                                         href="https://youtu.be/1uyB3Emp_h0"
                                         target="_blank"
+                                        rel="noreferrer"
                                     >YouTube</Button>
                                     <Button startIcon={<InstagramIcon/>} href="">Instagram</Button>
                                 </nav>
