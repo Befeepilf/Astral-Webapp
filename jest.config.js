@@ -2,7 +2,11 @@ module.exports = {
     setupFilesAfterEnv: ['jest-extended'],
     moduleDirectories: ['node_modules', '.'],
     moduleNameMapper: {
-        "^react(.*)$": '<rootDir>/node_modules/react$1' // https://github.com/testing-library/react-hooks-testing-library/issues/294#issue-558549837
+        '^react(.*)$': '<rootDir>/node_modules/react$1' // https://github.com/testing-library/react-hooks-testing-library/issues/294#issue-558549837
+    },
+    transform: {
+        '^.+\\.jsx?$': 'babel-jest',
+        '^.+\\.css$': '<rootDir>/tests/__transformers__/cssTransformer.js'
     },
     collectCoverage: true,
     collectCoverageFrom: [

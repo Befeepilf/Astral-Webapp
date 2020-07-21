@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {useSelector} from 'react-redux';
-import {resolve} from 'styled-jsx/css';
+import css from 'styled-jsx/css';
 
 import isSameDay from 'date-fns/isSameDay';
 import format from 'date-fns/format';
@@ -23,16 +23,16 @@ import {dateToDayName} from 'util.js';
 import styles from 'styles/sections/MoviesPerDay/MovieDetails.css';
 
 
-const day = resolve`
+const day = (css.resolve)`
     margin-bottom: -35px;
 `;
 
-const rating = resolve`
+const rating = (css.resolve)`
   margin-bottom: -2px;
   margin-right: 21px;
 `;
 
-const btnSession = resolve`
+const btnSession = (css.resolve)`
   padding: 2px 14px;
   margin-right: 14px;
   color: ${TEXT_PRIMARY};
@@ -40,27 +40,27 @@ const btnSession = resolve`
   border-radius: 35px !important;
 `;
 
-const btnSessionSelected = resolve`
+const btnSessionSelected = (css.resolve)`
   color: #000 !important;
   background-color: ${TEXT_PRIMARY} !important;
 `;
 
-const btnBookSession = resolve`
+const btnBookSession = (css.resolve)`
   padding: 7px 14px;
   margin-right: 21px;
   border-radius: 2px;
 `;
 
-const btnBookSessionIcon = resolve`
+const btnBookSessionIcon = (css.resolve)`
   margin-right: 7px;
 `;
 
-const btnMore = resolve`
+const btnMore = (css.resolve)`
   padding: 7px 14px 7px 21px;
   border-radius: 2px;
 `;
 
-const btnMoreIcon = resolve`
+const btnMoreIcon = (css.resolve)`
   margin-left: 7px;
 `;
 
@@ -85,7 +85,7 @@ export default function(props) {
             <div className="details-row">
                 <Rating
                     size="small"
-                    value={props.movie.imdbRating * 5/10}
+                    value={props.movie.imdbRating / 2}
                     max={5}
                     precision={0.1}
                     readOnly 
